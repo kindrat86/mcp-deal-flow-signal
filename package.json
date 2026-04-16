@@ -1,0 +1,47 @@
+{
+  "name": "@gitdealflow/mcp-signal",
+  "version": "1.0.0",
+  "mcpName": "io.github.kindrat86/vc-deal-flow-signal",
+  "description": "MCP server for VC Deal Flow Signal — search startup engineering acceleration data across 20 sectors. Commit velocity, contributor growth, and repo expansion signals for seed/Series A investors.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "venture-capital",
+    "deal-flow",
+    "startup-signals",
+    "github-analytics",
+    "engineering-acceleration"
+  ],
+  "license": "MIT",
+  "author": "The Data Nerd <signal@gitdealflow.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kindrat86/mcp-deal-flow-signal.git"
+  },
+  "homepage": "https://gitdealflow.com",
+  "type": "module",
+  "bin": {
+    "gitdealflow-mcp": "./dist/server.js"
+  },
+  "main": "./dist/server.js",
+  "files": [
+    "dist",
+    "server.json",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "@types/node": "^22.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
