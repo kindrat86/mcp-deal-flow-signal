@@ -1,6 +1,6 @@
 {
   "name": "@gitdealflow/mcp-signal",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "mcpName": "io.github.kindrat86/vc-deal-flow-signal",
   "description": "MCP server for VC Deal Flow Signal — search startup engineering acceleration data across 20 sectors. Commit velocity, contributor growth, and repo expansion signals for seed/Series A investors.",
   "keywords": [
@@ -16,7 +16,8 @@
   "author": "The Data Nerd <signal@gitdealflow.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/kindrat86/mcp-deal-flow-signal.git"
+    "url": "https://github.com/kindrat86/vc-deal-flow-signal.git",
+    "directory": "mcp-server"
   },
   "homepage": "https://gitdealflow.com",
   "type": "module",
@@ -27,6 +28,7 @@
   "files": [
     "dist",
     "server.json",
+    "glama.json",
     "README.md"
   ],
   "scripts": {

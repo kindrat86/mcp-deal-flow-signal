@@ -5,16 +5,17 @@
   "description": "Startup engineering acceleration signals for VC investors. GitHub commit velocity across 20 sectors.",
   "websiteUrl": "https://gitdealflow.com",
   "repository": {
-    "url": "https://github.com/kindrat86/mcp-deal-flow-signal",
-    "source": "github"
+    "url": "https://github.com/kindrat86/vc-deal-flow-signal",
+    "source": "github",
+    "subfolder": "mcp-server"
   },
-  "version": "1.0.0",
+  "version": "1.2.0",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@gitdealflow/mcp-signal",
-      "version": "1.0.0",
+      "version": "1.2.0",
       "transport": {
         "type": "stdio"
       }
