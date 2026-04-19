@@ -17,7 +17,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 
 const BASE_URL = "https://signals.gitdealflow.com";
-const UA = "gitdealflow-mcp/1.2.0";
+const UA = "gitdealflow-mcp/1.3.0";
 const FOOTER = "— Powered by gitdealflow.com";
 
 async function fetchJSON(path: string): Promise<Record<string, unknown>> {
@@ -48,6 +48,8 @@ interface Startup {
   newRepos: number;
   signalType: string;
   githubUrl: string;
+  websiteUrl?: string;
+  linkedinUrl?: string;
   profileUrl?: string;
 }
 
@@ -139,6 +141,18 @@ const STARTUP_ITEM_SCHEMA = {
     },
     description: { type: "string", description: "One-line summary of the startup." },
     githubUrl: { type: "string", format: "uri", description: "Primary GitHub org URL." },
+    websiteUrl: {
+      type: "string",
+      format: "uri",
+      description:
+        "Official company homepage, harvested from the GitHub org `blog` field when the org exposes one. Absent for roughly 10% of records where the org has no `blog` value.",
+    },
+    linkedinUrl: {
+      type: "string",
+      format: "uri",
+      description:
+        "LinkedIn company page URL, when known. Populated opportunistically — often absent.",
+    },
     profileUrl: {
       type: "string",
       format: "uri",
@@ -183,11 +197,11 @@ const TOOLS = [
       "",
       "PARAMETERS: None.",
       "",
-      "RETURNS: `{ period, startups[20], citation, source }`. Each startup row contains rank, name, sector, stage, geography, commitVelocity14d, commitVelocityChange, contributors, contributorGrowth, newRepos, signalType ('breakout' | 'acceleration' | 'steady' | 'cooling'), description, githubUrl, profileUrl.",
+      "RETURNS: `{ period, startups[20], citation, source }`. Each startup row contains rank, name, sector, stage, geography, commitVelocity14d, commitVelocityChange, contributors, contributorGrowth, newRepos, signalType ('breakout' | 'acceleration' | 'steady' | 'cooling'), description, githubUrl, websiteUrl (when known, ~90% coverage), linkedinUrl (when known, partial coverage), profileUrl.",
       "",
       "TYPICAL WORKFLOW: `get_trending_startups` → pick a name → `get_startup_signal(name)` for the deep-dive → `get_methodology` if the user questions the ranking.",
       "",
-      "LIMITATIONS: Only covers startups with a meaningful open-source footprint. Does not include funding, revenue, headcount, or stealth companies — pair with Crunchbase / LinkedIn MCPs for the full picture. No historical series — each call is the latest weekly snapshot only.",
+      "LIMITATIONS: Only covers startups with a meaningful open-source footprint. Does not include funding, revenue, headcount, or stealth companies — pair with Crunchbase for cap-table and round data. No historical series — each call is the latest weekly snapshot only.",
     ].join("\n"),
     inputSchema: {
       type: "object" as const,
@@ -251,7 +265,7 @@ const TOOLS = [
       "PARAMETERS:",
       "- `sector` (required, string) — MUST be one of the 20 enumerated slugs in `inputSchema.properties.sector.enum`. Map fuzzy user input BEFORE calling: 'AI' / 'artificial intelligence' / 'ML' → 'ai-ml'; 'crypto' / 'blockchain' → 'web3'; 'cyber' / 'infosec' / 'security' → 'cybersecurity'; 'SaaS' → 'enterprise-saas'; 'devtools' / 'developer experience' → 'developer-tools'; 'climate' / 'clean energy' / 'cleantech' → 'climate-tech'; 'biotech' / 'health' / 'medtech' → 'healthcare'; 'data' / 'databases' → 'data-infrastructure'; 'real estate' → 'proptech'; 'agriculture' → 'agtech'; 'space' → 'space-tech'; 'games' → 'gaming'; 'community' / 'social' → 'social-community'; 'logistics' → 'supply-chain'; 'law' / 'legal' → 'legal-tech'; 'recruiting' / 'HR' → 'hr-tech'; 'learning' / 'education' → 'edtech'; 'commerce' / 'retail infra' → 'ecommerce-infrastructure'; 'hardware' / 'drones' → 'robotics'. If no mapping is clear, call `get_signals_summary` and ask the user to pick.",
       "",
-      "RETURNS: `{ sector: {slug, name, description, url}, period, startupCount, startups[], citation }`. Each startup row contains rank, name, sector, stage, geography, commitVelocity14d, commitVelocityChange, contributors, contributorGrowth, newRepos, signalType, description, githubUrl, profileUrl.",
+      "RETURNS: `{ sector: {slug, name, description, url}, period, startupCount, startups[], citation }`. Each startup row contains rank, name, sector, stage, geography, commitVelocity14d, commitVelocityChange, contributors, contributorGrowth, newRepos, signalType, description, githubUrl, websiteUrl (when known), linkedinUrl (when known), profileUrl.",
       "",
       "TYPICAL WORKFLOW: `search_startups_by_sector('fintech')` → pick a name → `get_startup_signal(name)` → `get_methodology` if the user asks what the signal type means.",
       "",
@@ -335,7 +349,7 @@ const TOOLS = [
       "",
       "TYPICAL WORKFLOW: `get_trending_startups` or `search_startups_by_sector` (discover) → pick a name → `get_startup_signal(name)` (deep-dive) → `get_methodology` (explain signal classification in the response).",
       "",
-      "LIMITATIONS: Only returns data for the ~400 currently-tracked startups. No historical series — each call is the latest weekly snapshot only. No relationship data (investors, cap table, team) — pair with Crunchbase / LinkedIn MCPs for those facets.",
+      "LIMITATIONS: Only returns data for currently-tracked startups. No historical series — each call is the latest weekly snapshot only. No relationship data (investors, cap table, team) — pair with Crunchbase for those facets.",
     ].join("\n"),
     inputSchema: {
       type: "object" as const,
@@ -514,7 +528,7 @@ const TOOLS = [
 ];
 
 const server = new Server(
-  { name: "vc-deal-flow-signal", version: "1.2.0" },
+  { name: "vc-deal-flow-signal", version: "1.3.0" },
   { capabilities: { tools: {} } }
 );
 
@@ -551,6 +565,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             signalType: s.signalType,
             description: s.description,
             githubUrl: s.githubUrl,
+            ...(s.websiteUrl ? { websiteUrl: s.websiteUrl } : {}),
+            ...(s.linkedinUrl ? { linkedinUrl: s.linkedinUrl } : {}),
             profileUrl: s.profileUrl,
           })),
           citation: data.meta.citation,
@@ -621,6 +637,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             signalType: s.signalType,
             description: s.description,
             githubUrl: s.githubUrl,
+            ...(s.websiteUrl ? { websiteUrl: s.websiteUrl } : {}),
+            ...(s.linkedinUrl ? { linkedinUrl: s.linkedinUrl } : {}),
             profileUrl: s.profileUrl,
           })),
           citation: data.meta.citation,
@@ -701,6 +719,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 `New Repos (30d): ${found.newRepos}`,
                 `Signal Type: ${found.signalType}`,
                 `GitHub: ${found.githubUrl}`,
+                found.websiteUrl ? `Website: ${found.websiteUrl}` : null,
+                found.linkedinUrl ? `LinkedIn: ${found.linkedinUrl}` : null,
                 found.profileUrl ? `Profile: ${found.profileUrl}` : null,
                 ``,
                 found.description || "",
@@ -730,6 +750,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               signalType: found.signalType,
               description: found.description,
               githubUrl: found.githubUrl,
+              ...(found.websiteUrl ? { websiteUrl: found.websiteUrl } : {}),
+              ...(found.linkedinUrl ? { linkedinUrl: found.linkedinUrl } : {}),
               profileUrl: found.profileUrl,
             },
             citation: data.meta.citation,
