@@ -1,0 +1,53 @@
+1
+00:00:00,000 --> 00:00:03,000
+Ask Claude about VC deal flow.
+
+2
+00:00:03,000 --> 00:00:06,500
+No dashboard. No API key.
+
+3
+00:00:06,500 --> 00:00:11,200
+Just type a question in plain English.
+
+4
+00:00:11,200 --> 00:00:18,000
+Which cybersecurity startups
+are showing the highest velocity?
+
+5
+00:00:18,000 --> 00:00:24,000
+Claude picks the right MCP tool...
+
+6
+00:00:24,000 --> 00:00:31,500
+...and pulls live startup signals.
+
+7
+00:00:31,500 --> 00:00:39,500
+Top movers by 14-day commit velocity.
+
+8
+00:00:39,500 --> 00:00:46,500
+Acceleration. Stage. Geography.
+
+9
+00:00:46,500 --> 00:00:53,500
+One click to deep-dive any startup.
+
+10
+00:00:53,500 --> 00:01:01,000
+Full signal card pulls in seconds.
+
+11
+00:01:01,000 --> 00:01:07,500
+Contributors. Growth.
+Signal type. Sector rank.
+
+12
+00:01:07,500 --> 00:01:10,500
+Free MCP server for Claude.
+
+13
+00:01:10,500 --> 00:01:11,780
+npx @gitdealflow/mcp-signal
