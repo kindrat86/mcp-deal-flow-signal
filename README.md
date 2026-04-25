@@ -4,7 +4,7 @@ Search startup engineering acceleration signals directly from your AI assistant.
 
 ![Claude querying VC Deal Flow Signal MCP server](https://gitdealflow.com/mcp-demo.gif)
 
-Tracks commit velocity, contributor growth, and repository expansion across 20 sectors. Built for seed/Series A investors looking for traction signals before they show up in traditional deal flow.
+Tracks commit velocity, contributor growth, and repository expansion across 20 sectors. Built for angels, scouts, and technical operators looking for traction signals before they show up in traditional deal flow.
 
 ## Install
 
@@ -52,10 +52,16 @@ All tools are read-only, idempotent, and fetch live data from the public API (no
 
 All data is sourced live from [signals.gitdealflow.com](https://signals.gitdealflow.com) public API. No API key required. Updated weekly on Mondays.
 
+## Complementary: the Scout Game
+
+If you want to put your own eye on the line, there's a prediction game on top of the same dataset at [signals.gitdealflow.com/predict](https://signals.gitdealflow.com/predict). Call which tracked startups raise a round in the next 6 months, earn points when your calls resolve, climb a public rank ladder from Curious to Oracle. Free tier: 3 predictions per month. Paid: 10 per month. Leaderboard: [signals.gitdealflow.com/leaderboard](https://signals.gitdealflow.com/leaderboard).
+
 ## Links
 
 - Website: https://gitdealflow.com
 - Dashboard: https://signals.gitdealflow.com
+- Scout Game: https://signals.gitdealflow.com/predict
+- Leaderboard: https://signals.gitdealflow.com/leaderboard
 - JSON API: https://signals.gitdealflow.com/api/signals.json
 - Twitter/X: https://x.com/data_nerd
 
