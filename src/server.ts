@@ -15,10 +15,64 @@ import {
   ListToolsRequestSchema,
   CallToolRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
+import { randomUUID } from "node:crypto";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { homedir } from "node:os";
 
+const SERVER_VERSION = "1.3.2";
 const BASE_URL = "https://signals.gitdealflow.com";
-const UA = "gitdealflow-mcp/1.3.0";
+const UA = `gitdealflow-mcp/${SERVER_VERSION}`;
 const FOOTER = "— Powered by gitdealflow.com";
+
+const TELEMETRY_DISABLED =
+  process.env.GITDEALFLOW_MCP_TELEMETRY === "0" ||
+  process.env.DO_NOT_TRACK === "1";
+const POSTHOG_KEY = "phc_lyZCgvTpicjLzAO3rY2GhxuX5WUc5jQjP8ZVwwJqauX";
+const POSTHOG_HOST = "https://eu.i.posthog.com";
+
+function loadOrCreateDistinctId(): string {
+  const dir = join(homedir(), ".gitdealflow-mcp");
+  const file = join(dir, "id");
+  try {
+    return readFileSync(file, "utf8").trim();
+  } catch {
+    const id = randomUUID();
+    try {
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(file, id, "utf8");
+    } catch {
+      // best-effort; if FS is read-only, generate ephemeral id per session
+    }
+    return id;
+  }
+}
+
+const DISTINCT_ID = TELEMETRY_DISABLED ? "" : loadOrCreateDistinctId();
+
+function captureEvent(event: string, properties: Record<string, unknown>): void {
+  if (TELEMETRY_DISABLED) return;
+  // Fire-and-forget; never block tool response on telemetry
+  fetch(`${POSTHOG_HOST}/i/v0/e/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      api_key: POSTHOG_KEY,
+      event,
+      distinct_id: DISTINCT_ID,
+      properties: { ...properties, server_version: SERVER_VERSION },
+      timestamp: new Date().toISOString(),
+    }),
+  }).catch(() => {
+    // swallow — telemetry must never break the server
+  });
+}
+
+if (!TELEMETRY_DISABLED) {
+  process.stderr.write(
+    `[gitdealflow-mcp] anonymous usage telemetry enabled (tool name + duration only, no input/output data). Disable with GITDEALFLOW_MCP_TELEMETRY=0 or DO_NOT_TRACK=1.\n`
+  );
+}
 
 async function fetchJSON(path: string): Promise<Record<string, unknown>> {
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -528,7 +582,7 @@ const TOOLS = [
 ];
 
 const server = new Server(
-  { name: "vc-deal-flow-signal", version: "1.3.0" },
+  { name: "vc-deal-flow-signal", version: SERVER_VERSION },
   { capabilities: { tools: {} } }
 );
 
@@ -536,6 +590,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }))
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
+  const startedAt = Date.now();
+  let success = true;
+  let errorMessage: string | undefined;
 
   try {
     switch (name) {
@@ -836,6 +893,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       default:
+        success = false;
+        errorMessage = `unknown_tool:${name}`;
         return {
           content: [
             { type: "text" as const, text: `Unknown tool: ${name}` },
@@ -844,15 +903,24 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
     }
   } catch (err) {
+    success = false;
+    errorMessage = err instanceof Error ? err.message : String(err);
     return {
       content: [
         {
           type: "text" as const,
-          text: `Error: ${err instanceof Error ? err.message : String(err)}`,
+          text: `Error: ${errorMessage}`,
         },
       ],
       isError: true,
     };
+  } finally {
+    captureEvent("mcp_tool_called", {
+      tool_name: name,
+      duration_ms: Date.now() - startedAt,
+      success,
+      ...(errorMessage ? { error: errorMessage.slice(0, 200) } : {}),
+    });
   }
 });
 
