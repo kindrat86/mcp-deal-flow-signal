@@ -14,13 +14,18 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import {
   ListToolsRequestSchema,
   CallToolRequestSchema,
+  ListResourcesRequestSchema,
+  ListResourceTemplatesRequestSchema,
+  ReadResourceRequestSchema,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 
-const SERVER_VERSION = "1.3.2";
+const SERVER_VERSION = "1.4.0";
 const BASE_URL = "https://signals.gitdealflow.com";
 const UA = `gitdealflow-mcp/${SERVER_VERSION}`;
 const FOOTER = "— Powered by gitdealflow.com";
@@ -522,6 +527,94 @@ const TOOLS = [
     },
   },
   {
+    name: "get_scout_receipts",
+    title: "Get GitHub Scout Receipts",
+    description: [
+      "Compute a Scout Score (0-100) for a GitHub user from their public starring history. Cross-references the user's starred repos against a curated database of ~75 validated unicorns (Series A+, $1B+ valuations, acquisitions, 25K+ stars in last 5 years) and grades how many they starred *before* the validation event.",
+      "",
+      "WHEN TO USE:",
+      "- The user wants to evaluate a developer's investment taste retroactively (e.g. 'how good is @sindresorhus at spotting unicorns?').",
+      "- Vetting a potential angel investor or scout based on their public OSS taste.",
+      "- Comparing two developers' early-call track records.",
+      "- Generating shareable proof-of-taste content for a developer profile.",
+      "",
+      "DO NOT USE FOR:",
+      "- Fetching live trending startups — use `get_trending_startups`.",
+      "- Forward-looking predictions on whether a startup will raise — direct the user to https://signals.gitdealflow.com/predict (browser-only, not yet a tool).",
+      "- Looking up a startup's signal score — use `get_startup_signal`.",
+      "",
+      "BEHAVIOR:",
+      "- Read-only, idempotent within a 24h window.",
+      "- Hits `/api/receipts/{username}` which fetches public starring data from GitHub then scores against the validated-wins database.",
+      "- 24-hour CDN cache; same username re-queried within 24h is served from cache.",
+      "- No authentication required from the MCP client. Server-side uses a fine-grained PAT for elevated GitHub rate limits.",
+      "- On user not found: returns `isError: true` with HTTP 404.",
+      "- On GitHub rate limit: returns `isError: true` with HTTP 503.",
+      "",
+      "PARAMETERS: `github_username` (required) — GitHub username, 1-39 chars, alphanumeric + hyphens.",
+      "",
+      "RETURNS: `{ username, score, rank ('curious'|'scout'|'sharp'|'elite'|'oracle'), total_stars, matched_count, early_count, top_wins[], personality, share_url, og_image_url }`. `top_wins` lists up to 8 entries with org, name, event, starred_at, months_early, weight, points. `personality` is a one-paragraph templated commentary on the user's taste pattern.",
+      "",
+      "TYPICAL WORKFLOW: User asks 'is @X a good scout?' → `get_scout_receipts({ github_username: 'X' })` → quote the score, top wins, and personality, link the share_url for them to post.",
+      "",
+      "LIMITATIONS: The validated-wins database is biased toward developer-tools, AI, and data/ops companies with public GitHub presence. Closed-source unicorns are not represented — false negatives possible. Score reflects backwards-looking taste only; not a predictor of future calls.",
+    ].join("\n"),
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        github_username: {
+          type: "string",
+          description:
+            "GitHub username to compute Receipts for. Must match the public GitHub username format: 1-39 chars, alphanumeric + single hyphens, no leading/trailing hyphen.",
+          minLength: 1,
+          maxLength: 39,
+          pattern: "^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$",
+        },
+      },
+      required: ["github_username"],
+      additionalProperties: false,
+    },
+    outputSchema: {
+      type: "object" as const,
+      properties: {
+        username: { type: "string" },
+        score: { type: "integer", minimum: 0, maximum: 100 },
+        rank: { type: "string", enum: ["curious", "scout", "sharp", "elite", "oracle"] },
+        total_stars: { type: "integer" },
+        matched_count: { type: "integer" },
+        early_count: { type: "integer" },
+        top_wins: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              org: { type: "string" },
+              name: { type: "string" },
+              repo: { type: "string" },
+              event: { type: "string" },
+              event_date: { type: "string" },
+              starred_at: { type: "string" },
+              months_early: { type: "number" },
+              weight: { type: "number" },
+              points: { type: "number" },
+            },
+          },
+        },
+        personality: { type: "string" },
+        share_url: { type: "string", format: "uri" },
+        og_image_url: { type: "string", format: "uri" },
+      },
+      required: ["username", "score", "rank", "matched_count", "early_count", "top_wins", "share_url"],
+    },
+    annotations: {
+      title: "Get GitHub Scout Receipts",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
+  },
+  {
     name: "get_methodology",
     title: "Get Signal Methodology",
     description: [
@@ -581,9 +674,114 @@ const TOOLS = [
   },
 ];
 
+const RESOURCES = [
+  {
+    uri: "signal://trending",
+    name: "Trending Startups (current week)",
+    description:
+      "Top 20 startups across all 20 sectors ranked by engineering acceleration for the current weekly period. Refreshes every Monday ~09:00 UTC.",
+    mimeType: "application/json",
+  },
+  {
+    uri: "signal://summary",
+    name: "Dataset Summary",
+    description:
+      "Current period, active sector count, total startups tracked, last refresh timestamp, and direct URLs to every machine-readable format (JSON, CSV, RSS, OpenAPI, llms.txt).",
+    mimeType: "application/json",
+  },
+  {
+    uri: "signal://methodology",
+    name: "Signal Methodology",
+    description:
+      "Full plain-text methodology covering data sources, metric computation, signal classification thresholds, refresh cadence, and known limitations.",
+    mimeType: "text/markdown",
+  },
+];
+
+const RESOURCE_TEMPLATES = [
+  {
+    uriTemplate: "signal://startup/{name}",
+    name: "Startup Signal Profile",
+    description:
+      "Full engineering-acceleration profile for a single tracked startup. Substitute {name} with the display name or GitHub org slug; matching is case-insensitive and normalization-tolerant.",
+    mimeType: "application/json",
+  },
+  {
+    uriTemplate: "signal://sector/{slug}",
+    name: "Sector Signal Snapshot",
+    description:
+      "All tracked startups within a sector, ranked by engineering acceleration. {slug} must be one of: ai-ml, fintech, cybersecurity, developer-tools, healthcare, climate-tech, enterprise-saas, data-infrastructure, web3, robotics, edtech, ecommerce-infrastructure, supply-chain, legal-tech, hr-tech, proptech, agtech, gaming, space-tech, social-community.",
+    mimeType: "application/json",
+  },
+];
+
+const PROMPTS = [
+  {
+    name: "weekly_digest",
+    description:
+      "Generate a Monday-morning weekly digest from the latest top-20 trending startups: 3-line summary at top, then ranked picks with one-sentence rationales grounded in the signal data.",
+    arguments: [],
+  },
+  {
+    name: "sector_deep_dive",
+    description:
+      "Write a sector-focused intelligence brief: name the top movers, the breakout patterns, and what the data implies for thesis-driven investors. Pulls live data via search_startups_by_sector.",
+    arguments: [
+      {
+        name: "sector",
+        description:
+          "Sector slug. Must be one of the 20 supported values (e.g. 'ai-ml', 'fintech', 'cybersecurity').",
+        required: true,
+      },
+    ],
+  },
+  {
+    name: "find_dark_horse",
+    description:
+      "Surface an under-the-radar startup that's accelerating quietly: filter by acceleration signal but a contributor count below the median for its sector. Useful for scout-tier picks.",
+    arguments: [
+      {
+        name: "sector",
+        description:
+          "Optional sector slug to constrain the search. If omitted, searches across all sectors.",
+        required: false,
+      },
+    ],
+  },
+  {
+    name: "compare_startups",
+    description:
+      "Head-to-head comparison of two startups across velocity, contributor growth, new-repo count, and signal classification, with a recommendation for which one warrants deeper diligence.",
+    arguments: [
+      {
+        name: "name_a",
+        description: "First startup name or GitHub org slug.",
+        required: true,
+      },
+      {
+        name: "name_b",
+        description: "Second startup name or GitHub org slug.",
+        required: true,
+      },
+    ],
+  },
+  {
+    name: "acceleration_memo",
+    description:
+      "Draft a one-page deal memo for a named startup: signal profile, sector context, leading-indicator interpretation, comparable companies, and suggested follow-up questions for a partner meeting. Pulls live data via get_startup_signal.",
+    arguments: [
+      {
+        name: "name",
+        description: "Startup display name or GitHub org slug.",
+        required: true,
+      },
+    ],
+  },
+];
+
 const server = new Server(
   { name: "vc-deal-flow-signal", version: SERVER_VERSION },
-  { capabilities: { tools: {} } }
+  { capabilities: { tools: {}, resources: {}, prompts: {} } }
 );
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
@@ -875,6 +1073,82 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
+      case "get_scout_receipts": {
+        const username = String(
+          (request.params.arguments as Record<string, unknown> | undefined)
+            ?.github_username ?? ""
+        ).trim();
+        if (
+          !username ||
+          !/^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/.test(username)
+        ) {
+          throw new Error(
+            "Invalid github_username. Must be 1-39 chars, alphanumeric + single hyphens."
+          );
+        }
+        const result = (await fetchJSON(
+          `/api/receipts/${encodeURIComponent(username)}`
+        )) as unknown as {
+          username: string;
+          score: number;
+          rank: string;
+          total_stars: number;
+          matched_count: number;
+          early_count: number;
+          top_wins: Array<{
+            org: string;
+            name: string;
+            repo: string;
+            event: string;
+            event_date: string;
+            starred_at: string;
+            months_early: number;
+            weight: number;
+            points: number;
+          }>;
+          personality?: string;
+        };
+        const shareUrl = `${BASE_URL}/receipts/${encodeURIComponent(username)}`;
+        const ogImageUrl = `${BASE_URL}/api/og/receipts/${encodeURIComponent(username)}`;
+        const topWinsText = result.top_wins
+          .slice(0, 5)
+          .map(
+            (w, i) =>
+              `${i + 1}. ${w.name} — starred ${w.months_early.toFixed(0)}mo before ${w.event} (+${Math.round(w.points)} pts)`
+          )
+          .join("\n");
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: [
+                `GitHub Scout Receipts for @${result.username}`,
+                ``,
+                `Scout Score: ${result.score} / 100  (rank: ${result.rank.toUpperCase()})`,
+                `Validated wins matched: ${result.matched_count}  ·  Called early: ${result.early_count}  ·  Stars analyzed: ${result.total_stars}`,
+                ``,
+                `Top early calls:`,
+                topWinsText || "(no early calls in our database)",
+                ``,
+                result.personality ? `Taste: ${result.personality}` : "",
+                ``,
+                `Shareable card: ${shareUrl}`,
+                `OG image: ${ogImageUrl}`,
+                ``,
+                FOOTER,
+              ]
+                .filter(Boolean)
+                .join("\n"),
+            },
+          ],
+          structuredContent: {
+            ...result,
+            share_url: shareUrl,
+            og_image_url: ogImageUrl,
+          },
+        };
+      }
+
       case "get_methodology": {
         const text = await fetchText("/llms-full.txt");
         const methodSection =
@@ -917,6 +1191,365 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   } finally {
     captureEvent("mcp_tool_called", {
       tool_name: name,
+      duration_ms: Date.now() - startedAt,
+      success,
+      ...(errorMessage ? { error: errorMessage.slice(0, 200) } : {}),
+    });
+  }
+});
+
+server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+  resources: RESOURCES,
+}));
+
+server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => ({
+  resourceTemplates: RESOURCE_TEMPLATES,
+}));
+
+server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+  const { uri } = request.params;
+  const startedAt = Date.now();
+  let success = true;
+  let errorMessage: string | undefined;
+
+  try {
+    const trendingMatch = uri === "signal://trending";
+    const summaryMatch = uri === "signal://summary";
+    const methodologyMatch = uri === "signal://methodology";
+    const startupMatch = uri.match(/^signal:\/\/startup\/(.+)$/);
+    const sectorMatch = uri.match(/^signal:\/\/sector\/([a-z0-9-]+)$/);
+
+    if (trendingMatch) {
+      const data = (await fetchJSON("/api/signals.json")) as unknown as SignalsData;
+      const sectorByStartup = new Map<string, string>();
+      for (const sector of data.sectors) {
+        for (const s of sector.startups) sectorByStartup.set(s.name, sector.name);
+      }
+      const payload = {
+        period: data.meta.period.name,
+        startups: data.trending.slice(0, 20).map((s, i) => ({
+          rank: i + 1,
+          name: s.name,
+          sector: sectorByStartup.get(s.name) ?? "",
+          stage: s.stage,
+          geography: s.geography,
+          commitVelocity14d: s.commitVelocity14d,
+          commitVelocityChange: s.commitVelocityChange,
+          contributors: s.contributors,
+          contributorGrowth: s.contributorGrowth,
+          newRepos: s.newRepos,
+          signalType: s.signalType,
+          description: s.description,
+          githubUrl: s.githubUrl,
+          ...(s.websiteUrl ? { websiteUrl: s.websiteUrl } : {}),
+          ...(s.linkedinUrl ? { linkedinUrl: s.linkedinUrl } : {}),
+          profileUrl: s.profileUrl,
+        })),
+        citation: data.meta.citation,
+        source: BASE_URL,
+      };
+      return {
+        contents: [
+          { uri, mimeType: "application/json", text: JSON.stringify(payload, null, 2) },
+        ],
+      };
+    }
+
+    if (summaryMatch) {
+      const changelog = (await fetchJSON(
+        "/api/changelog.json"
+      )) as unknown as ChangelogData;
+      const cp = changelog.currentPeriod;
+      const payload = {
+        period: cp.name,
+        sectorsActive: cp.sectorsActive,
+        startupsTracked: cp.startupsTracked,
+        lastDataRefresh: cp.lastDataRefresh,
+        updateFrequency: "Weekly (Mondays)",
+        formats: {
+          json: `${BASE_URL}/api/signals.json`,
+          csv: `${BASE_URL}/api/signals.csv`,
+          rss: `${BASE_URL}/feed.xml`,
+          openapi: `${BASE_URL}/api/openapi.json`,
+          llmsTxt: `${BASE_URL}/llms.txt`,
+          llmsFullTxt: `${BASE_URL}/llms-full.txt`,
+          aiPolicy: `${BASE_URL}/ai.txt`,
+          agentCard: `${BASE_URL}/.well-known/agent-card.json`,
+          mcpManifest: `${BASE_URL}/.well-known/mcp.json`,
+          agentsMd: `${BASE_URL}/.well-known/agents.md`,
+        },
+        website: "https://gitdealflow.com",
+        dashboard: BASE_URL,
+        citation: `VC Deal Flow Signal (signals.gitdealflow.com), ${cp.name} data.`,
+      };
+      return {
+        contents: [
+          { uri, mimeType: "application/json", text: JSON.stringify(payload, null, 2) },
+        ],
+      };
+    }
+
+    if (methodologyMatch) {
+      const text = await fetchText("/llms-full.txt");
+      const methodSection =
+        text.split("## Methodology")[1]?.split("## Glossary")[0] ?? "";
+      const methodology = `# VC Deal Flow Signal — Methodology\n\n${methodSection.trim()}\n\nFull details: ${BASE_URL}/methodology\n\n${FOOTER}`;
+      return {
+        contents: [{ uri, mimeType: "text/markdown", text: methodology }],
+      };
+    }
+
+    if (startupMatch) {
+      const inputName = decodeURIComponent(startupMatch[1]);
+      const slug = inputName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+      const data = (await fetchJSON("/api/signals.json")) as unknown as SignalsData;
+      let found: Startup | null = null;
+      let foundSector = "";
+      for (const sector of data.sectors) {
+        const match = sector.startups.find(
+          (s) =>
+            s.name
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-|-$/g, "") === slug
+        );
+        if (match) {
+          found = match;
+          foundSector = sector.name;
+          break;
+        }
+      }
+      const payload = found
+        ? {
+            found: true,
+            startup: {
+              name: found.name,
+              sector: foundSector,
+              stage: found.stage,
+              geography: found.geography,
+              commitVelocity14d: found.commitVelocity14d,
+              commitVelocityChange: found.commitVelocityChange,
+              contributors: found.contributors,
+              contributorGrowth: found.contributorGrowth,
+              newRepos: found.newRepos,
+              signalType: found.signalType,
+              description: found.description,
+              githubUrl: found.githubUrl,
+              ...(found.websiteUrl ? { websiteUrl: found.websiteUrl } : {}),
+              ...(found.linkedinUrl ? { linkedinUrl: found.linkedinUrl } : {}),
+              profileUrl: found.profileUrl,
+            },
+            citation: data.meta.citation,
+          }
+        : {
+            found: false,
+            suggestion:
+              "Try the exact GitHub org name, or read signal://trending or signal://sector/{slug} to browse the tracked universe.",
+            citation: data.meta.citation,
+          };
+      return {
+        contents: [
+          { uri, mimeType: "application/json", text: JSON.stringify(payload, null, 2) },
+        ],
+      };
+    }
+
+    if (sectorMatch) {
+      const sectorSlug = sectorMatch[1];
+      const data = (await fetchJSON("/api/signals.json")) as unknown as SignalsData;
+      const sector = data.sectors.find((s) => s.slug === sectorSlug);
+      if (!sector) {
+        success = false;
+        errorMessage = `unknown_sector:${sectorSlug}`;
+        const payload = {
+          error: `Sector "${sectorSlug}" not found.`,
+          availableSectors: data.sectors.map((s) => s.slug),
+        };
+        return {
+          contents: [
+            { uri, mimeType: "application/json", text: JSON.stringify(payload, null, 2) },
+          ],
+        };
+      }
+      const payload = {
+        sector: {
+          slug: sector.slug,
+          name: sector.name,
+          description: sector.description,
+          url: sector.url,
+        },
+        period: data.meta.period.name,
+        startupCount: sector.startups.length,
+        startups: sector.startups.map((s, i) => ({
+          rank: i + 1,
+          name: s.name,
+          stage: s.stage,
+          geography: s.geography,
+          commitVelocity14d: s.commitVelocity14d,
+          commitVelocityChange: s.commitVelocityChange,
+          contributors: s.contributors,
+          contributorGrowth: s.contributorGrowth,
+          newRepos: s.newRepos,
+          signalType: s.signalType,
+          description: s.description,
+          githubUrl: s.githubUrl,
+          ...(s.websiteUrl ? { websiteUrl: s.websiteUrl } : {}),
+          ...(s.linkedinUrl ? { linkedinUrl: s.linkedinUrl } : {}),
+          profileUrl: s.profileUrl,
+        })),
+        citation: data.meta.citation,
+      };
+      return {
+        contents: [
+          { uri, mimeType: "application/json", text: JSON.stringify(payload, null, 2) },
+        ],
+      };
+    }
+
+    success = false;
+    errorMessage = `unknown_uri:${uri}`;
+    throw new Error(
+      `Unknown resource URI: ${uri}. Valid: signal://trending, signal://summary, signal://methodology, signal://startup/{name}, signal://sector/{slug}.`
+    );
+  } finally {
+    captureEvent("mcp_resource_read", {
+      uri,
+      duration_ms: Date.now() - startedAt,
+      success,
+      ...(errorMessage ? { error: errorMessage.slice(0, 200) } : {}),
+    });
+  }
+});
+
+server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+  prompts: PROMPTS,
+}));
+
+server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+  const { name, arguments: args } = request.params;
+  const a = (args ?? {}) as Record<string, string>;
+  const startedAt = Date.now();
+  let success = true;
+  let errorMessage: string | undefined;
+
+  try {
+    let messageText = "";
+
+    switch (name) {
+      case "weekly_digest":
+        messageText = [
+          "You are writing a Monday-morning Signal Digest for venture investors.",
+          "",
+          "Step 1: Call the `get_trending_startups` tool to fetch the current top 20.",
+          "Step 2: Open with three plain-English sentences naming the dominant pattern of the week (e.g. 'AI infra is breaking out — five of the top ten are inference-layer plays').",
+          "Step 3: List the top 10 startups, one per line: `<rank>. <name> (<sector>) — <commitVelocityChange> velocity, <signalType>. <one-sentence rationale grounded in the signal>`.",
+          "Step 4: Close with the citation string from the tool response and the source URL.",
+          "",
+          "Tone: factual, terse, no hype. No em-dashes. No 'I think' or 'in my opinion'. Investor-grade copy.",
+        ].join("\n");
+        break;
+
+      case "sector_deep_dive": {
+        const sector = a.sector;
+        if (!sector) {
+          throw new Error("Missing required argument: sector");
+        }
+        messageText = [
+          `You are writing a sector intelligence brief for ${sector}.`,
+          "",
+          `Step 1: Call \`search_startups_by_sector\` with sector="${sector}".`,
+          "Step 2: Identify the top 3 movers (highest commit-velocity-change) and the top 3 by contributor growth.",
+          "Step 3: Name the dominant pattern (deploy-frequency spikes, infrastructure buildout, contributor expansion).",
+          "Step 4: Surface 1-2 dark horses: startups with steady-but-quiet acceleration outside the top of the table.",
+          "Step 5: Close with thesis-relevant follow-ups for a partner meeting.",
+          "",
+          "If the sector slug is unknown, the tool will return an `availableSectors` list — surface it to the user and stop.",
+          "Tone: factual, terse, investor-grade. Cite the data with the citation string from the tool response.",
+        ].join("\n");
+        break;
+      }
+
+      case "find_dark_horse": {
+        const sector = a.sector;
+        messageText = [
+          "You are surfacing one under-the-radar startup that's accelerating quietly — a scout-tier pick before it hits the Top 20.",
+          "",
+          sector
+            ? `Step 1: Call \`search_startups_by_sector\` with sector="${sector}".`
+            : "Step 1: Call `get_trending_startups` to get the current top 20, then call `search_startups_by_sector` for 2-3 sectors with the strongest signal density to widen the candidate pool.",
+          "Step 2: Filter for: signalType in {acceleration, breakout} AND contributors below the sector median AND commitVelocityChange >= +50%. Drop anything in the top 5 of its sector — those are not dark horses.",
+          "Step 3: Pick ONE recommendation. Justify in 4-5 sentences using the signal numbers (velocity change, contributor growth, new repos, sector context).",
+          "Step 4: Add 2-3 follow-up questions an investor should answer before a first call.",
+          "",
+          "Tone: skeptical, evidence-first, investor-grade. No hype. Surface the GitHub URL so the reader can verify.",
+        ].join("\n");
+        break;
+      }
+
+      case "compare_startups": {
+        const a_name = a.name_a;
+        const b_name = a.name_b;
+        if (!a_name || !b_name) {
+          throw new Error("Missing required arguments: name_a and name_b");
+        }
+        messageText = [
+          `You are writing a head-to-head investor comparison of ${a_name} vs ${b_name}.`,
+          "",
+          `Step 1: Call \`get_startup_signal\` for both names in parallel: name="${a_name}" and name="${b_name}".`,
+          "Step 2: If either is `found: false`, surface the suggestion and stop — do not invent data.",
+          "Step 3: Build a side-by-side comparison table covering: Stage, Geography, Commit Velocity (14d), Velocity Change, Contributors, Contributor Growth, New Repos (30d), Signal Type, Sector.",
+          "Step 4: Below the table, write a 4-6 sentence verdict naming which warrants deeper diligence and why — grounded in the data, not guesswork.",
+          "Step 5: List 2-3 follow-up due-diligence questions specific to the divergence between the two profiles.",
+          "",
+          "Tone: factual, neutral, investor-grade. Cite the data with the citation string.",
+        ].join("\n");
+        break;
+      }
+
+      case "acceleration_memo": {
+        const startupName = a.name;
+        if (!startupName) {
+          throw new Error("Missing required argument: name");
+        }
+        messageText = [
+          `You are drafting a one-page deal memo for ${startupName}.`,
+          "",
+          `Step 1: Call \`get_startup_signal\` with name="${startupName}".`,
+          "Step 2: If `found: false`, surface the suggestion and stop.",
+          "Step 3: Call `get_methodology` so you can correctly interpret the signalType.",
+          `Step 4: Optionally call \`search_startups_by_sector\` with the startup's sector slug to surface 2-3 comparable companies.`,
+          "Step 5: Draft the memo with these sections (no more than one page total):",
+          "  • TL;DR (2 sentences, signal verdict + recommended action)",
+          "  • Engineering Signal Profile (the data, with the methodology-grounded interpretation of signalType)",
+          "  • Sector Context (where this fits, who the comparables are)",
+          "  • Leading-Indicator Read (what the velocity + contributor + new-repo numbers imply about stage, hiring, and product motion)",
+          "  • Open Questions (3-5 follow-ups for a partner meeting)",
+          "",
+          "Tone: factual, investor-grade. No hype. End with the citation string from the tool response.",
+        ].join("\n");
+        break;
+      }
+
+      default:
+        success = false;
+        errorMessage = `unknown_prompt:${name}`;
+        throw new Error(`Unknown prompt: ${name}`);
+    }
+
+    return {
+      messages: [
+        {
+          role: "user" as const,
+          content: { type: "text" as const, text: messageText },
+        },
+      ],
+    };
+  } finally {
+    captureEvent("mcp_prompt_get", {
+      prompt_name: name,
       duration_ms: Date.now() - startedAt,
       success,
       ...(errorMessage ? { error: errorMessage.slice(0, 200) } : {}),

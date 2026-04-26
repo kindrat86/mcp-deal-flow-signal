@@ -1,5 +1,8 @@
 # VC Deal Flow Signal — MCP Server
 
+[![Scout Score](https://signals.gitdealflow.com/api/badge/scout/kindrat86/svg)](https://signals.gitdealflow.com/badge-builder)
+[![Commit Momentum](https://signals.gitdealflow.com/api/badge/momentum/mlflow/mlflow/svg)](https://signals.gitdealflow.com/badge-builder)
+
 Search startup engineering acceleration signals directly from your AI assistant.
 
 ![Claude querying VC Deal Flow Signal MCP server](https://gitdealflow.com/mcp-demo.gif)
@@ -56,12 +59,24 @@ All data is sourced live from [signals.gitdealflow.com](https://signals.gitdealf
 
 If you want to put your own eye on the line, there's a prediction game on top of the same dataset at [signals.gitdealflow.com/predict](https://signals.gitdealflow.com/predict). Call which tracked startups raise a round in the next 6 months, earn points when your calls resolve, climb a public rank ladder from Curious to Oracle. Free tier: 3 predictions per month. Paid: 10 per month. Leaderboard: [signals.gitdealflow.com/leaderboard](https://signals.gitdealflow.com/leaderboard).
 
+## Free badges (any GitHub user, any tracked repo)
+
+Drop a live Scout Score in your GitHub profile README, or a Commit Momentum tier on any tracked repo. Auto-updates, free, no signup, same shields.io look as Codecov / WakaTime.
+
+```markdown
+[![Scout Score](https://signals.gitdealflow.com/api/badge/scout/YOUR-GITHUB-HANDLE/svg)](https://signals.gitdealflow.com/badge-builder)
+[![Commit Momentum](https://signals.gitdealflow.com/api/badge/momentum/ORG/REPO/svg)](https://signals.gitdealflow.com/badge-builder)
+```
+
+Generator with copy-paste markdown / HTML / BBCode at [signals.gitdealflow.com/badge-builder](https://signals.gitdealflow.com/badge-builder).
+
 ## Links
 
 - Website: https://gitdealflow.com
 - Dashboard: https://signals.gitdealflow.com
 - Scout Game: https://signals.gitdealflow.com/predict
 - Leaderboard: https://signals.gitdealflow.com/leaderboard
+- Badge builder: https://signals.gitdealflow.com/badge-builder
 - JSON API: https://signals.gitdealflow.com/api/signals.json
 - Twitter/X: https://x.com/data_nerd
 
