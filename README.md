@@ -2,6 +2,12 @@
 
 [![Scout Score](https://signals.gitdealflow.com/api/badge/scout/kindrat86/svg)](https://signals.gitdealflow.com/badge-builder)
 [![Commit Momentum](https://signals.gitdealflow.com/api/badge/momentum/mlflow/mlflow/svg)](https://signals.gitdealflow.com/badge-builder)
+[![npm](https://img.shields.io/npm/v/@gitdealflow/mcp-signal?label=npm&color=blue)](https://www.npmjs.com/package/@gitdealflow/mcp-signal)
+[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-listed-emerald)](https://registry.modelcontextprotocol.io/v0/servers/io.github.kindrat86%2Fvc-deal-flow-signal)
+[![Smithery](https://img.shields.io/badge/Smithery-Verified%2098%2F100-emerald)](https://smithery.ai/servers/kindrat86/vc-deal-flow-signal)
+[![Cursor Directory](https://img.shields.io/badge/cursor.directory-listed-sky)](https://cursor.directory/plugins/vc-deal-flow-signal-mcp-1)
+[![Goose](https://img.shields.io/badge/Block%20Goose-PR%20%238974-sky)](https://github.com/aaif-goose/goose/pull/8974)
+[![Raycast](https://img.shields.io/badge/Raycast%20MCP%20Registry-PR%20%2327618-sky)](https://github.com/raycast/extensions/pull/27618)
 
 Search startup engineering acceleration signals directly from your AI assistant.
 
@@ -36,6 +42,22 @@ Or for Claude Code (`.mcp.json` in project root):
   }
 }
 ```
+
+## Use in any agent runtime
+
+The same `npx -y @gitdealflow/mcp-signal` command runs in **seven** popular agent runtimes — copy-paste snippets for each at **[signals.gitdealflow.com/integrations/agent-runtimes](https://signals.gitdealflow.com/integrations/agent-runtimes)**.
+
+| Runtime | Marketplace status | Install path |
+|---|---|---|
+| **Cursor** | [cursor.directory listing](https://cursor.directory/plugins/vc-deal-flow-signal-mcp-1) (Under review) | Settings → MCP → +Add MCP server → paste JSON |
+| **Cline (VS Code)** | [cline/mcp-marketplace#1491](https://github.com/cline/mcp-marketplace/issues/1491) (Submitted) | Cline panel → ⚙ → Edit Config → paste JSON |
+| **Block Goose** (43.7k★) | [aaif-goose/goose#8974](https://github.com/aaif-goose/goose/pull/8974) (PR open) | `goose session --with-extension "npx -y @gitdealflow/mcp-signal"` |
+| **OpenHands** | No marketplace exists | `~/.openhands/mcp.json` paste-JSON, or Settings → MCP → Add Server |
+| **Aider** | No native MCP — bridge via [mcpm-aider](https://github.com/lutzleonhardt/mcpm-aider) | `npx -y mcpm-aider add vc-deal-flow-signal --command "npx -y @gitdealflow/mcp-signal"` |
+| **AiderDesk** | Settings → Agent → MCP Servers paste-JSON | Same JSON shape as Claude Desktop |
+| **Raycast** (v1.98+) | [raycast/extensions#27618](https://github.com/raycast/extensions/pull/27618) (PR open) | Manage MCP Servers → +Add Server → paste JSON |
+
+Plus: **[Smithery](https://smithery.ai/servers/kindrat86/vc-deal-flow-signal)** (one-click HTTP install, Verified 98/100), **[Mistral Le Chat](https://signals.gitdealflow.com/integrations/mistral)** (Custom MCP Connector), and a **[ChatGPT GPT](https://signals.gitdealflow.com/integrations/chatgpt)** running the same OpenAPI Action.
 
 ## Tools
 
@@ -74,6 +96,7 @@ Generator with copy-paste markdown / HTML / BBCode at [signals.gitdealflow.com/b
 
 - Website: https://gitdealflow.com
 - Dashboard: https://signals.gitdealflow.com
+- Agent runtime install matrix: https://signals.gitdealflow.com/integrations/agent-runtimes
 - Scout Game: https://signals.gitdealflow.com/predict
 - Leaderboard: https://signals.gitdealflow.com/leaderboard
 - Badge builder: https://signals.gitdealflow.com/badge-builder
