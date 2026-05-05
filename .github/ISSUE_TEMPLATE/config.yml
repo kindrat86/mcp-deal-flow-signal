@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Quick question? Email signal@gitdealflow.com
+    url: mailto:signal@gitdealflow.com
+    about: For non-bug, non-feature questions about the MCP server, dataset, or methodology.
+  - name: Methodology paper (SSRN, 219 confirmed fundraises)
+    url: https://ssrn.com/abstract=6606558
+    about: Understand how the engineering-acceleration signal is computed before filing an issue about a specific score.
+  - name: Browse the live dataset
+    url: https://signals.gitdealflow.com
+    about: Confirm the data is fresh and your startup is tracked before filing a "missing data" bug.

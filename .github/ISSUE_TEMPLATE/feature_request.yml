@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest a new MCP tool, parameter, or capability
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What can't you do today?
+      description: Describe the workflow that's blocked. Lead with the user pain, not the proposed feature.
+      placeholder: "When I ask Claude to ... it can't because ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: What would solve it?
+      description: Optional — propose a tool name + signature if you have one in mind. Otherwise just describe the outcome.
+      placeholder: "A get_competitor_orgs(name) tool that returns the top 5 GitHub orgs in the same niche"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: How blocking is this for you?
+      options:
+        - "Nice to have — the agent can work around it"
+        - "Important — significantly improves my workflow"
+        - "Critical — I can't use the server without it"
+    validations:
+      required: true

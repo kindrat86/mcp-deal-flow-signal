@@ -1,0 +1,66 @@
+name: Bug report
+description: Report a bug or unexpected behavior in the MCP server
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. The more specific you can be, the faster I can fix it.
+
+  - type: input
+    id: version
+    attributes:
+      label: MCP server version
+      description: Output of `npx @gitdealflow/mcp-signal --version` or check your package.json.
+      placeholder: "1.6.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: client
+    attributes:
+      label: MCP client
+      options:
+        - Claude Desktop
+        - Cursor
+        - Windsurf
+        - VS Code (Continue / Cline)
+        - Custom (please specify in steps)
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Exact prompt or tool call that triggered the bug. Include redacted JSON-RPC payload if you can capture it.
+      placeholder: |
+        1. Started Claude Desktop with the server configured
+        2. Asked: "Which AI startups are accelerating?"
+        3. Got error: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Paste the error message or unexpected output verbatim.
+    validations:
+      required: true
+
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      placeholder: "Node 22.x, macOS 15.4, install method (npx vs global), GITDEALFLOW_MCP_TELEMETRY env var if set"
+    validations:
+      required: false
