@@ -4,7 +4,7 @@ Search startup engineering acceleration signals directly from your AI assistant.
 
 [![Glama A-Tier](https://glama.ai/mcp/servers/@kindrat86/vc-deal-flow-signal/badge)](https://glama.ai/mcp/servers/@kindrat86/vc-deal-flow-signal)
 
-> Glama A-Tier (4.9 / 5.0 across 6 tools). One-line install for Claude Desktop, Claude Code, Cursor, Cline, and Continue via `npx -y @gitdealflow/mcp-signal`.
+> Glama A-Tier (4.9 / 5.0). 13 tools — 10 free, no API key. One-line install for Claude Desktop, Claude Code, Cursor, Cline, and Continue via `npx -y @gitdealflow/mcp-signal`.
 
 ![Claude querying VC Deal Flow Signal MCP server](https://gitdealflow.com/mcp-demo.gif)
 
@@ -42,6 +42,8 @@ Or for Claude Code (`.mcp.json` in project root):
 
 All tools are read-only, idempotent, and fetch live data from the public API (no auth required). Responses include both human-readable text and structured JSON (`structuredContent`) matching each tool's `outputSchema`.
 
+**Free tools (10) — no API key, no account:**
+
 | Tool | Input | Returns |
 |---|---|---|
 | `get_trending_startups` | — | Top 20 startups ranked by engineering acceleration across all sectors. |
@@ -49,6 +51,21 @@ All tools are read-only, idempotent, and fetch live data from the public API (no
 | `get_startup_signal` | `name` (case-insensitive) | Full signal profile for one startup: velocity, contributors, repos, classification. |
 | `get_signals_summary` | — | Dataset snapshot — period, counts, refresh date, format URLs, citation. |
 | `get_methodology` | — | How signals are sourced, computed, and classified, with known limitations. |
+| `shortlist_signals` | filters (sector, stage, geography, signal type) | Ranked shortlist of the strongest engineering-acceleration signals matching your filters. |
+| `compare_signals` | 2–5 startup names | Side-by-side acceleration scores, evidence, and raise-likelihood for the named startups. |
+| `predict_funding` | `name` | Transparent, scored funding-likelihood claim with the full evidence chain, citable. |
+| `get_diligence_dossier` | company/entity name | Public-source diligence dossier in one cited object — M&A history, funding, key facts. |
+| `get_scout_receipts` | GitHub username | Scout Score (0–100) computed from public starring history, cross-referenced against tracked startups. |
+
+**Paid agent tools (3) — €0.10 per call, credits at [signals.gitdealflow.com/agents/credits](https://signals.gitdealflow.com/agents/credits):**
+
+| Tool | Returns |
+|---|---|
+| `research_company` | Enriched dossier for one tracked startup: full signal row, sector rank, top-5 sector peers, citation. |
+| `compose_thesis` | Structured investment thesis: snapshot, signal type, sector rank, data-derived strengths, peer comparables. |
+| `deep_dive_scan` | Multi-cohort sector scan: tracked/breakout/cooling counts, top-10 by velocity, breakout and cold lists. |
+
+The hosted remote endpoint (`https://signals.gitdealflow.com/api/mcp/rpc`, streamable-http) additionally exposes `share_result` (free) and `get_deep_signal` (€0.19/call).
 
 **Supported sectors:** `ai-ml`, `fintech`, `cybersecurity`, `developer-tools`, `healthcare`, `climate-tech`, `enterprise-saas`, `data-infrastructure`, `web3`, `robotics`, `edtech`, `ecommerce-infrastructure`, `supply-chain`, `legal-tech`, `hr-tech`, `proptech`, `agtech`, `gaming`, `space-tech`, `social-community`.
 
