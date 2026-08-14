@@ -71,7 +71,7 @@ The hosted remote endpoint (`https://signals.gitdealflow.com/api/mcp/rpc`, strea
 
 ## Data
 
-All data is sourced live from [signals.gitdealflow.com](https://signals.gitdealflow.com) public API. No API key required. Updated weekly on Mondays.
+All data is sourced live from [the deal flow data API](https://signals.gitdealflow.com) public API. No API key required. Updated weekly on Mondays.
 
 ## Complementary: the Scout Game
 
