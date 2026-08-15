@@ -138,19 +138,14 @@ interface ChangelogData {
 }
 
 const SECTOR_SLUGS = [
-  "ai-ml",
-  "fintech",
-  "cybersecurity",
-  "developer-tools",
   "healthcare",
-  "climate-tech",
-  "enterprise-saas",
-  "data-infrastructure",
-  "web3",
-  "robotics",
   "edtech",
   "ecommerce-infrastructure",
   "supply-chain",
+  "web3",
+  "enterprise-saas",
+  "data-infrastructure",
+  "robotics",
   "legal-tech",
   "hr-tech",
   "proptech",
@@ -234,7 +229,7 @@ const TOOLS = [
     name: "get_trending_startups",
     title: "Get Trending Startups",
     description: [
-      "Return the top 20 startups ranked by engineering acceleration across all 20 sectors for the current reporting period. Each row includes commit velocity, contributor count, signal classification, and GitHub URL.",
+      "Return the top 20 startups ranked by engineering acceleration across all 15 sectors for the current reporting period. Each row includes commit velocity, contributor count, signal classification, and GitHub URL.",
       "",
       "WHEN TO USE:",
       "- A VC, scout, or analyst asks 'who's trending this week', 'what's hot right now', 'who should I look at', or 'what to watch'.",
@@ -253,7 +248,7 @@ const TOOLS = [
       "- No authentication required. No rate limit enforced by this server; the upstream CDN absorbs typical agent traffic.",
       "- Returns exactly 20 rows when the dataset is healthy; fewer only if the upstream feed is degraded.",
       "- On upstream failure: returns `isError: true` with the HTTP status in the text block — retry once after a short delay before escalating to the user.",
-      "- Open-world: the tracked universe (~400 companies) evolves week to week as new orgs qualify or drop out.",
+      "- Open-world: the tracked universe (350+ companies) evolves week to week as new orgs qualify or drop out.",
       "",
       "PARAMETERS: None.",
       "",
@@ -300,10 +295,10 @@ const TOOLS = [
     name: "search_startups_by_sector",
     title: "Search Startups by Sector",
     description: [
-      "Return every tracked startup within one of 20 supported sectors, ranked by engineering acceleration for the current reporting period.",
+      "Return every tracked startup within one of 15 supported sectors, ranked by engineering acceleration for the current reporting period.",
       "",
       "WHEN TO USE:",
-      "- The user names a specific vertical: 'show me AI/ML startups', 'who's moving in fintech?', 'cybersecurity deal flow', 'climate-tech picks'.",
+      "- The user names a specific vertical: 'show me healthcare startups', 'who's moving in web3?', 'enterprise SaaS deal flow', 'space-tech picks'.",
       "- You need a focused list for a thesis-driven investor or a sector report.",
       "- You're comparing momentum inside a defined market before a sourcing cycle.",
       "",
@@ -317,17 +312,17 @@ const TOOLS = [
       "- Read-only, idempotent, no side effects.",
       "- Deterministic within a 7-day window: dataset refreshes every Monday ~09:00 UTC.",
       "- No authentication required. No rate limit enforced by this server.",
-      "- Returns between 5 and 30 startups per sector depending on open-source density. Dense: ai-ml, developer-tools, data-infrastructure. Sparse: legal-tech, proptech, agtech.",
+      "- Returns between 5 and 30 startups per sector depending on open-source density. Dense: web3, data-infrastructure, enterprise-saas. Sparse: legal-tech, proptech, agtech.",
       "- On unknown sector slug: returns `isError: true` with the full list of valid slugs in `structuredContent.availableSectors` so the agent can retry with a correct value.",
       "- On upstream failure: returns `isError: true` with the HTTP status.",
       "- Open-world: the tracked universe changes week to week.",
       "",
       "PARAMETERS:",
-      "- `sector` (required, string) — MUST be one of the 20 enumerated slugs in `inputSchema.properties.sector.enum`. Map fuzzy user input BEFORE calling: 'AI' / 'artificial intelligence' / 'ML' → 'ai-ml'; 'crypto' / 'blockchain' → 'web3'; 'cyber' / 'infosec' / 'security' → 'cybersecurity'; 'SaaS' → 'enterprise-saas'; 'devtools' / 'developer experience' → 'developer-tools'; 'climate' / 'clean energy' / 'cleantech' → 'climate-tech'; 'biotech' / 'health' / 'medtech' → 'healthcare'; 'data' / 'databases' → 'data-infrastructure'; 'real estate' → 'proptech'; 'agriculture' → 'agtech'; 'space' → 'space-tech'; 'games' → 'gaming'; 'community' / 'social' → 'social-community'; 'logistics' → 'supply-chain'; 'law' / 'legal' → 'legal-tech'; 'recruiting' / 'HR' → 'hr-tech'; 'learning' / 'education' → 'edtech'; 'commerce' / 'retail infra' → 'ecommerce-infrastructure'; 'hardware' / 'drones' → 'robotics'. If no mapping is clear, call `get_signals_summary` and ask the user to pick.",
+      "- `sector` (required, string) — MUST be one of the 15 enumerated slugs in `inputSchema.properties.sector.enum`. Map fuzzy user input BEFORE calling: 'crypto' / 'blockchain' → 'web3'; 'SaaS' → 'enterprise-saas'; 'biotech' / 'health' / 'medtech' → 'healthcare'; 'data' / 'databases' → 'data-infrastructure'; 'real estate' → 'proptech'; 'agriculture' → 'agtech'; 'space' → 'space-tech'; 'games' → 'gaming'; 'community' / 'social' → 'social-community'; 'logistics' → 'supply-chain'; 'law' / 'legal' → 'legal-tech'; 'recruiting' / 'HR' → 'hr-tech'; 'learning' / 'education' → 'edtech'; 'commerce' / 'retail infra' → 'ecommerce-infrastructure'; 'hardware' / 'drones' → 'robotics'. If no mapping is clear, call `get_signals_summary` and ask the user to pick.",
       "",
       "RETURNS: `{ sector: {slug, name, description, url}, period, startupCount, startups[], citation }`. Each startup row contains rank, name, sector, stage, geography, commitVelocity14d, commitVelocityChange, contributors, contributorGrowth, newRepos, signalType, description, githubUrl, websiteUrl (when known), linkedinUrl (when known), profileUrl.",
       "",
-      "TYPICAL WORKFLOW: `search_startups_by_sector('fintech')` → pick a name → `get_startup_signal(name)` → `get_methodology` if the user asks what the signal type means.",
+      "TYPICAL WORKFLOW: `search_startups_by_sector('web3')` → pick a name → `get_startup_signal(name)` → `get_methodology` if the user asks what the signal type means.",
       "",
       "LIMITATIONS: One sector slug per call; no free-text sector search. For cross-sector views use `get_trending_startups`. No historical series — each call is the latest weekly snapshot only.",
     ].join("\n"),
@@ -337,9 +332,9 @@ const TOOLS = [
         sector: {
           type: "string",
           description:
-            "Sector slug. Must be one of the 20 supported values. Map fuzzy user input to the closest slug (e.g. 'AI' → 'ai-ml', 'crypto' → 'web3', 'cyber' → 'cybersecurity', 'SaaS' → 'enterprise-saas').",
+            "Sector slug. Must be one of the 15 supported values. Map fuzzy user input to the closest slug (e.g. 'crypto' → 'web3', 'SaaS' → 'enterprise-saas', 'biotech' → 'healthcare').",
           enum: [...SECTOR_SLUGS],
-          examples: ["ai-ml", "fintech", "cybersecurity", "developer-tools"],
+          examples: ["healthcare", "web3", "gaming", "edtech"],
         },
       },
       required: ["sector"],
@@ -400,7 +395,7 @@ const TOOLS = [
       "- Matching is case-insensitive and normalization-tolerant: whitespace, punctuation, and capitalization are stripped before comparison. 'Sky Pilot', 'skypilot', and 'SkyPilot' all resolve to the same entry. Accepts either the display name or the GitHub org slug.",
       "- On no match: returns `structuredContent: { found: false, suggestion: ... }`. This is an EXPECTED outcome (the startup is not in the tracked universe), NOT an error — do not retry, do not flag as failure. Instead surface the suggestion to the user and offer to run `get_trending_startups` or `search_startups_by_sector`.",
       "- On upstream failure: returns `isError: true` with HTTP status.",
-      "- Open-world: only ~400 companies are tracked. This tool cannot add new ones — direct the user to the website submission form if needed.",
+      "- Open-world: only 350+ companies are tracked. This tool cannot add new ones — direct the user to the website submission form if needed.",
       "",
       "PARAMETERS:",
       "- `name` (required, string, 1–100 chars) — Startup display name OR GitHub org name. Case-insensitive; punctuation and whitespace are ignored during matching.",
@@ -865,7 +860,7 @@ const RESOURCES = [
     uri: "signal://trending",
     name: "Trending Startups (current week)",
     description:
-      "Top 20 startups across all 20 sectors ranked by engineering acceleration for the current weekly period. Refreshes every Monday ~09:00 UTC.",
+      "Top 20 startups across all 15 sectors ranked by engineering acceleration for the current weekly period. Refreshes every Monday ~09:00 UTC.",
     mimeType: "application/json",
   },
   {
@@ -896,7 +891,7 @@ const RESOURCE_TEMPLATES = [
     uriTemplate: "signal://sector/{slug}",
     name: "Sector Signal Snapshot",
     description:
-      "All tracked startups within a sector, ranked by engineering acceleration. {slug} must be one of: ai-ml, fintech, cybersecurity, developer-tools, healthcare, climate-tech, enterprise-saas, data-infrastructure, web3, robotics, edtech, ecommerce-infrastructure, supply-chain, legal-tech, hr-tech, proptech, agtech, gaming, space-tech, social-community.",
+      "All tracked startups within a sector, ranked by engineering acceleration. {slug} must be one of: healthcare, edtech, ecommerce-infrastructure, supply-chain, web3, enterprise-saas, data-infrastructure, robotics, legal-tech, hr-tech, proptech, agtech, gaming, space-tech, social-community.",
     mimeType: "application/json",
   },
 ];
@@ -916,7 +911,7 @@ const PROMPTS = [
       {
         name: "sector",
         description:
-          "Sector slug. Must be one of the 20 supported values (e.g. 'ai-ml', 'fintech', 'cybersecurity').",
+          "Sector slug. Must be one of the 15 supported values (e.g. 'healthcare', 'web3', 'gaming').",
         required: true,
       },
     ],
@@ -1542,7 +1537,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           });
         }
         if (wantTelegram) {
-          const body = `${summary}\n\nFrom the GitDealFlow MCP server — free, install with: ${installCommand}\n\nThe methodology is published on SSRN with a 219-startup panel: ${ssrn}\nProduct: ${site}\n\nGitDealFlow tracks 4,200 startup GitHub orgs and ranks them by commit velocity acceleration, weekly. The pattern preceded confirmed fundraises by 21 to 47 days.`.slice(0, 995);
+          const body = `${summary}\n\nFrom the GitDealFlow MCP server — free, install with: ${installCommand}\n\nThe methodology is published on SSRN with a 219-startup panel: ${ssrn}\nProduct: ${site}\n\nGitDealFlow tracks 350+ startup GitHub orgs and ranks them by commit velocity acceleration, weekly. The pattern preceded confirmed fundraises by 21 to 47 days.`.slice(0, 995);
           posts.push({
             network: "telegram",
             body,

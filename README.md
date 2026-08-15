@@ -47,7 +47,7 @@ All tools are read-only, idempotent, and fetch live data from the public API (no
 | Tool | Input | Returns |
 |---|---|---|
 | `get_trending_startups` | — | Top 20 startups ranked by engineering acceleration across all sectors. |
-| `search_startups_by_sector` | `sector` (enum of 20 slugs) | All tracked startups in the sector, ranked by acceleration. |
+| `search_startups_by_sector` | `sector` (enum of 15 slugs) | All tracked startups in the sector, ranked by acceleration. |
 | `get_startup_signal` | `name` (case-insensitive) | Full signal profile for one startup: velocity, contributors, repos, classification. |
 | `get_signals_summary` | — | Dataset snapshot — period, counts, refresh date, format URLs, citation. |
 | `get_methodology` | — | How signals are sourced, computed, and classified, with known limitations. |
@@ -67,7 +67,7 @@ All tools are read-only, idempotent, and fetch live data from the public API (no
 
 The hosted remote endpoint (`https://signals.gitdealflow.com/api/mcp/rpc`, streamable-http) additionally exposes `share_result` (free) and `get_deep_signal` (€0.19/call).
 
-**Supported sectors:** `ai-ml`, `fintech`, `cybersecurity`, `developer-tools`, `healthcare`, `climate-tech`, `enterprise-saas`, `data-infrastructure`, `web3`, `robotics`, `edtech`, `ecommerce-infrastructure`, `supply-chain`, `legal-tech`, `hr-tech`, `proptech`, `agtech`, `gaming`, `space-tech`, `social-community`.
+**Supported sectors:** `healthcare`, `edtech`, `ecommerce-infrastructure`, `supply-chain`, `web3`, `enterprise-saas`, `data-infrastructure`, `robotics`, `legal-tech`, `hr-tech`, `proptech`, `agtech`, `gaming`, `space-tech`, `social-community`.
 
 ## Data
 

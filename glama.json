@@ -2,7 +2,7 @@
   "$schema": "https://glama.ai/mcp/schemas/server.json",
   "maintainers": ["kindrat86"],
   "name": "mcp-deal-flow-signal",
-  "description": "Startup engineering acceleration data for investors. Trending startups, sector search, per-startup signal profiles, funding-likelihood predictions, side-by-side comparisons, diligence dossiers, and scout scoring — derived from public GitHub activity across 20 sectors. Backed by the Startup Engineering Acceleration Dataset (DOI 10.5281/zenodo.19650920) and a deterministic 4-class signal classifier.",
+  "description": "Startup engineering acceleration data for investors. Trending startups, sector search, per-startup signal profiles, funding-likelihood predictions, side-by-side comparisons, diligence dossiers, and scout scoring — derived from public GitHub activity across 15 sectors. Backed by the Startup Engineering Acceleration Dataset (DOI 10.5281/zenodo.19650920) and a deterministic 4-class signal classifier.",
   "type": "mcp_server",
   "status": "production",
   "framework": "Node.js",
