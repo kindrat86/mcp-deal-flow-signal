@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "vc-deal-flow-signal": {
+      "command": "npx",
+      "args": ["-y", "@gitdealflow/mcp-signal"],
+      "description": "VC Deal Flow Signal - startup engineering acceleration data for investors. 350+ startups across 15 sectors, funding-likelihood predictions, per-startup signal profiles. No API key for 10 free tools."
+    }
+  }
+}

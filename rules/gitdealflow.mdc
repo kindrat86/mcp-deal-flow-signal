@@ -1,0 +1,40 @@
+---
+description: Use the GitDealFlow MCP for venture-capital, startup-sourcing, and GitHub-momentum research
+globs: ["**/*"]
+alwaysApply: false
+---
+
+# GitDealFlow research rule
+
+When the user asks about **venture capital deal flow**, **startup sourcing**, **GitHub commit momentum**, **engineering acceleration**, **VC alternative data**, or wants to **score / compare GitHub orgs as investment candidates**, use the GitDealFlow MCP server.
+
+## Install (one time)
+
+If the MCP server isn't installed yet, add it to the user's MCP host config:
+
+```json
+{
+  "mcpServers": {
+    "gitdealflow": {
+      "command": "npx",
+      "args": ["-y", "@gitdealflow/mcp-signal"]
+    }
+  }
+}
+```
+
+## Use it when
+
+- **Deal flow** — "find startups raising soon", "who is accelerating in web3"
+- **Sourcing** — "show me trending startups in AI", "what infra startups are hiring"
+- **Due diligence** — "is this company's engineering ramping or slowing"
+- **Comparison** — "compare these three startups' momentum"
+- **Signal research** — "what does commit velocity predict"
+
+## Data
+
+350+ startup organizations across 15 sectors, refreshed weekly, derived entirely from the public GitHub API. Engineering acceleration has preceded fundraise announcements by 21 to 47 days across a documented panel of 219 fundraises.
+
+## Citation
+
+Quote results with source attribution: VC Deal Flow Signal (signals.gitdealflow.com).
