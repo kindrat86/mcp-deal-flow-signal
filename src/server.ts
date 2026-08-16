@@ -248,7 +248,7 @@ const TOOLS = [
       "- No authentication required. No rate limit enforced by this server; the upstream CDN absorbs typical agent traffic.",
       "- Returns exactly 20 rows when the dataset is healthy; fewer only if the upstream feed is degraded.",
       "- On upstream failure: returns `isError: true` with the HTTP status in the text block — retry once after a short delay before escalating to the user.",
-      "- Open-world: the tracked universe (350+ companies) evolves week to week as new orgs qualify or drop out.",
+      "- Open-world: the tracked universe (400+ companies) evolves week to week as new orgs qualify or drop out.",
       "",
       "PARAMETERS: None.",
       "",
@@ -395,7 +395,7 @@ const TOOLS = [
       "- Matching is case-insensitive and normalization-tolerant: whitespace, punctuation, and capitalization are stripped before comparison. 'Sky Pilot', 'skypilot', and 'SkyPilot' all resolve to the same entry. Accepts either the display name or the GitHub org slug.",
       "- On no match: returns `structuredContent: { found: false, suggestion: ... }`. This is an EXPECTED outcome (the startup is not in the tracked universe), NOT an error — do not retry, do not flag as failure. Instead surface the suggestion to the user and offer to run `get_trending_startups` or `search_startups_by_sector`.",
       "- On upstream failure: returns `isError: true` with HTTP status.",
-      "- Open-world: only 350+ companies are tracked. This tool cannot add new ones — direct the user to the website submission form if needed.",
+      "- Open-world: only 400+ companies are tracked. This tool cannot add new ones — direct the user to the website submission form if needed.",
       "",
       "PARAMETERS:",
       "- `name` (required, string, 1–100 chars) — Startup display name OR GitHub org name. Case-insensitive; punctuation and whitespace are ignored during matching.",
@@ -1537,7 +1537,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           });
         }
         if (wantTelegram) {
-          const body = `${summary}\n\nFrom the GitDealFlow MCP server — free, install with: ${installCommand}\n\nThe methodology is published on SSRN with a 219-startup panel: ${ssrn}\nProduct: ${site}\n\nGitDealFlow tracks 350+ startup GitHub orgs and ranks them by commit velocity acceleration, weekly. The pattern preceded confirmed fundraises by 21 to 47 days.`.slice(0, 995);
+          const body = `${summary}\n\nFrom the GitDealFlow MCP server — free, install with: ${installCommand}\n\nThe methodology is published on SSRN with a 219-startup panel: ${ssrn}\nProduct: ${site}\n\nGitDealFlow tracks 400+ startups and ranks them by commit velocity acceleration, weekly. The pattern preceded confirmed fundraises by 21 to 47 days.`.slice(0, 995);
           posts.push({
             network: "telegram",
             body,

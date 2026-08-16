@@ -8,7 +8,7 @@ Search startup engineering acceleration signals directly from your AI assistant.
 
 ![Claude querying VC Deal Flow Signal MCP server](https://gitdealflow.com/mcp-demo.gif)
 
-Tracks commit velocity, contributor growth, and repository expansion across 15 sectors and 369 startups. Built for angels, scouts, and technical operators looking for traction signals before they show up in traditional deal flow.
+Tracks commit velocity, contributor growth, and repository expansion across 15 sectors and 350+ startups. Built for angels, scouts, and technical operators looking for traction signals before they show up in traditional deal flow.
 
 ## Install
 
