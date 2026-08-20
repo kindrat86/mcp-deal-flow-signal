@@ -73,6 +73,11 @@ The hosted remote endpoint (`https://signals.gitdealflow.com/api/mcp/rpc`, strea
 
 All data is sourced live from [the deal flow data API](https://signals.gitdealflow.com) public API. No API key required. Updated weekly on Mondays.
 
+- Live CSV: https://signals.gitdealflow.com/api/signals.csv
+- Live JSON: https://signals.gitdealflow.com/api/signals.json
+- Stable CC BY 4.0 research snapshot: https://huggingface.co/datasets/the-data-nerd/vc-deal-flow-signal
+- DOI-stamped release: https://doi.org/10.5281/zenodo.19650920
+
 ## Complementary: the Scout Game
 
 If you want to put your own eye on the line, there's a prediction game on top of the same dataset at [signals.gitdealflow.com/predict](https://signals.gitdealflow.com/predict). Call which tracked startups raise a round in the next 6 months, earn points when your calls resolve, climb a public rank ladder from Curious to Oracle. Free tier: 3 predictions per month. Paid: 10 per month. Leaderboard: [signals.gitdealflow.com/leaderboard](https://signals.gitdealflow.com/leaderboard).
