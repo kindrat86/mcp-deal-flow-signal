@@ -77,6 +77,7 @@ All data is sourced live from [the deal flow data API](https://signals.gitdealfl
 - Live JSON: https://signals.gitdealflow.com/api/signals.json
 - Stable CC BY 4.0 research snapshot: https://huggingface.co/datasets/the-data-nerd/vc-deal-flow-signal
 - DOI-stamped release: https://doi.org/10.5281/zenodo.19650920
+- Free field guide: [Seven Signals](https://signals.gitdealflow.com/book?utm_source=github&utm_medium=readme&utm_campaign=mcp-server) explains the method, limits, and replication path in 104 pages.
 
 ## Complementary: the Scout Game
 
